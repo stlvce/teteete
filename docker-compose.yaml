@@ -1,0 +1,25 @@
+services:
+  frontend:
+    build: ./frontend
+    container_name: pixel-frontend
+    expose:
+      - "4173"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+      - "traefik.http.services.frontend.loadbalancer.server.port=4173"
+
+  traefik:
+    image: traefik:v2.11
+    container_name: pixel-traefik
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+    ports:
+      - "80:80"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
